@@ -1,5 +1,16 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+migrations/
+venv/
+.idea/
+app/__init__.pyc
+.DS_Store
+.vscode/
+public/
+tmp/
+passenger_wsgi.py
+uploads/*
+netcube.log
 *.py[cod]
 *$py.class
 
