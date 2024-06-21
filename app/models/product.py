@@ -9,11 +9,15 @@ class Product(db.Model):
     package = db.Column(db.Integer(), default=1)
     stock = db.Column(db.Float(), default=0)
 
+    date_validity = db.Column(db.Boolean, default=False)
+
     image_uuid = db.Column(db.String(50), db.ForeignKey('image.uuid'))
 
     status = db.Column(db.String(20), nullable=False, default="Active")
 
     barcodes = db.relationship('Barcode', backref='product', lazy=True)
+
+    expirations = db.relationship('Expiration', backref='product', lazy=True)
     
     warehouses = db.relationship('Warehouse', secondary='product_warehouse_association',
                                   backref=db.backref('product', lazy=True))
@@ -35,7 +39,6 @@ class Product(db.Model):
             "name": self.name,
             "price": self.price,
             "package": self.package,
-            "image": self.image,
             "stock": self.stock,
             "barcodes": [barcode.serialize() for barcode in self.barcodes],
             "categories": [category.serialize() for category in self.categories],

@@ -44,8 +44,10 @@ def get_one_product():
             "uuid": product.uuid,
             "name": product.name,
             "price": product.price,
+            "package_price": product.price * product.package,
             "package": product.package,
-            "image": product.image,
+            "image": product.image.url if product.image else "",
+            "date_validity" : product.date_validity if product.date_validity != None else False,
             "stock": product.stock,
             "categories": [category.serialize() for category in product.categories],
             "barcodes": [barcode.serialize() for barcode in product.barcodes],
@@ -89,6 +91,11 @@ def create_product():
 
     if len(categories) != len(category_uuids):
         abort(400, "Some category UUIDs are invalid")
+
+    request.json['name'] = re.sub(r'\s+', ' ', request.json['name']).strip()
+    if Product.query.filter(Product.name == request.json['name']).first():
+            abort(409, "name is already in use by another product")
+
 
     new_object = Product.deserialize(request.json)
 
@@ -164,7 +171,7 @@ def edit_product():
 
     barcode_codes = request.json['barcodes']
     category_uuids = request.json['categories']
-
+    request.json['name'] = re.sub(r'\s+', ' ', request.json['name']).strip()
     # Validate barcodes
     existing_barcodes = Barcode.query.filter(Barcode.code.in_(barcode_codes)).all()
     if any(barcode.product_uuid != product.uuid for barcode in existing_barcodes):

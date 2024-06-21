@@ -9,3 +9,4 @@ from app.models.warehouse import *
 from app.models.supplier import *
 from app.models.associations import *
 from app.models.image import *
+from app.models.expiration import *

@@ -38,7 +38,7 @@ CORS(
 
 from app.views import authentication, user, branch, product, category
 from app import errors
-from app.models import Barcode, Branch, Category, Invoice, InvoiceDetails, Product, associations, Supplier, User, Warehouse
+from app.models import Barcode, Branch, Category, Expiration, Image, Invoice, InvoiceDetails, Product, associations, Supplier, User, Warehouse
 
 app.register_blueprint(bp)
 
