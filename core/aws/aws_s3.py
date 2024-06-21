@@ -22,6 +22,7 @@ def upload_image(key: str, base64_string: str, bucket: str, aws_region: str = "e
             ContentType='image/jpeg', ContentEncoding='base64')
         return f"https://{bucket}.s3.{aws_region}.amazonaws.com/{key}"
     except ClientError as e:
+        print(e)
         return str(e.response['Error']['Message'])
 
 

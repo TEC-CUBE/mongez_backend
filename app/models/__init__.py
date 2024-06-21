@@ -8,3 +8,4 @@ from app.models.branch import *
 from app.models.warehouse import *
 from app.models.supplier import *
 from app.models.associations import *
+from app.models.image import *

@@ -5,11 +5,13 @@ from passlib.hash import sha256_crypt
 from flask_jwt_extended import (
     get_jwt_identity, jwt_required
 )
-from app import bp,db
-from app.models import Product, Category, Barcode
+from app import bp,db, Config
+from app.models import Product, Category, Barcode, Image
 from datetime import datetime
 from core.utils import validate_request_schema
-
+from core.image.process import control_image_size, optimize_image
+from core.aws.aws_s3 import upload_image, delete_object
+import re
 
 ALLOWED_ROLES = ['admin', 'superadmin']
 
@@ -63,7 +65,12 @@ def create_product():
         'name': {'type': 'string', 'required': True, 'empty': False},
         'price': {'type': 'string', 'required': True, 'empty': False},
         'package': {'type': 'string', 'required': True, 'empty': False},
-        'image': {'type': 'string', 'required': False, 'empty': True},
+        'image': {'type': 'dict', 'schema': 
+                  {
+                    'name': {'type': 'string'},
+                    'type': {'type': 'string'},
+                    'base64': {'type': 'string'}
+                    }, 'required': False, 'empty': True},
         'barcodes': {'type': 'list', 'required': True, 'empty': False},
         'categories': {'type': 'list', 'required': True, 'empty': False}
     }
@@ -99,6 +106,28 @@ def create_product():
     for category in categories:
         new_object.categories.append(category)
 
+    if 'image' in request.json and request.json['image']:
+        image_size_limit = Config.MAX_CONTENT_LENGTH
+        image = request.json['image']
+
+        new_image = Image.deserialize(image)
+        optimized_image = optimize_image(image['base64'])
+
+        if not control_image_size(image['base64'], image_size_limit):
+            abort(400, f"product image exceeded the maximum size limit of {image_size_limit} KB")
+
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        image_url = upload_image(f"product-image-{timestamp}", optimized_image, Config.S3_BUCKET)
+
+        if not re.match(Config.REGEX, image_url):
+            abort(400, "Unable to process the product image")
+
+        new_image.url = image_url
+        new_image.action_author = get_jwt_identity().split(":")[0]
+
+        db.session.add(new_image)
+        new_image.products.append(new_object)
+
     db.session.commit()
     return jsonify(new_object.serialize()), 201
 
@@ -113,7 +142,12 @@ def edit_product():
         'name': {'type': 'string', 'required': True, 'empty': False},
         'price': {'type': 'string', 'required': True, 'empty': False},
         'package': {'type': 'string', 'required': True, 'empty': False},
-        'image': {'type': 'string', 'required': False, 'empty': True},
+        'image': {'type': 'dict', 'schema': 
+                  {
+                    'name': {'type': 'string'},
+                    'type': {'type': 'string'},
+                    'base64': {'type': 'string'}
+                    }, 'required': False, 'empty': True},
         'barcodes': {'type': 'list', 'required': True, 'empty': False},
         'categories': {'type': 'list', 'required': True, 'empty': False}
     }
@@ -175,7 +209,36 @@ def edit_product():
     # Update categories
     product.categories.clear()
     product.categories = categories
+    
+    if 'image' in request.json and request.json['image']:
+        image_uuid = product.image.uuid if product.image else ""
 
+        old_image = Image.query.filter_by(uuid=image_uuid).first()
+
+        if old_image:
+            delete_object(old_image.url.split('/')[-1], Config.S3_BUCKET)
+
+        image_size_limit = Config.MAX_CONTENT_LENGTH
+        image = request.json['image']
+
+        new_image = Image.deserialize(image)
+        optimized_image = optimize_image(image['base64'])
+
+        if not control_image_size(image['base64'], image_size_limit):
+            abort(400, f"product image exceeded the maximum size limit of {image_size_limit} KB")
+
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        image_url = upload_image(f"product-image-{timestamp}", optimized_image, Config.S3_BUCKET)
+
+        if not re.match(Config.REGEX, image_url):
+            abort(400, "Unable to process the product image")
+
+        new_image.url = image_url
+        new_image.action_author = get_jwt_identity().split(":")[0]
+
+        db.session.add(new_image)
+        new_image.products.append(product)    
+    
     product.action_author = get_jwt_identity().split(":")[0]
     product.updated = datetime.utcfromtimestamp(datetime.now().timestamp() + 7200). \
             strftime('%Y-%m-%d %H:%M:%S')    

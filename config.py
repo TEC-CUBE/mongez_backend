@@ -20,3 +20,5 @@ class Config(object):
     DOWNLOAD_FOLDER = "uploads"
     ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png", "pdf"]
     MAX_CONTENT_LENGTH = 1024 * 1024 * 16 # 16M
+    S3_BUCKET = 'mongez-images'
+    REGEX = "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"

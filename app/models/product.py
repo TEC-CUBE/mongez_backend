@@ -7,8 +7,9 @@ class Product(db.Model):
     name = db.Column(db.String(50), nullable=False)
     price = db.Column(db.Float(), default=0.00)
     package = db.Column(db.Integer(), default=1)
-    image = db.Column(db.String(250), nullable=True)
     stock = db.Column(db.Float(), default=0)
+
+    image_uuid = db.Column(db.String(50), db.ForeignKey('image.uuid'))
 
     status = db.Column(db.String(20), nullable=False, default="Active")
 
@@ -38,6 +39,7 @@ class Product(db.Model):
             "stock": self.stock,
             "barcodes": [barcode.serialize() for barcode in self.barcodes],
             "categories": [category.serialize() for category in self.categories],
+            "image" :  self.image.url if  self.image  else ""
         }
 
     @staticmethod
