@@ -12,6 +12,8 @@ class User(db.Model):
     role = db.Column(db.String(50), nullable=False)
     status = db.Column(db.String(20), nullable=False, default="Active")
     
+    branch_uuid = db.Column(db.String(50), db.ForeignKey('branch.uuid'), nullable=True)
+
     deleted_at = db.Column(db.DateTime, nullable=True)
     created = db.Column(db.DateTime, nullable=False, default=lambda: generate_local_timestamp())
     updated = db.Column(db.DateTime, nullable=False, default=lambda: generate_local_timestamp())

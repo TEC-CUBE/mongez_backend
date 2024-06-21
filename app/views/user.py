@@ -43,7 +43,6 @@ def get_user_profile():
 
 
 @bp.route('/user', methods=['POST'])
-@jwt_required()
 def create_user():
     schema = {
         'username': {'type': 'string', 'required': True, 'empty': False},
@@ -68,7 +67,7 @@ def create_user():
     new_user = User.deserialize(request.json)
 
     new_user.role = request.json['role']
-    new_user.action_author = get_jwt_identity().split(":")[0]
+    new_user.action_author = 'get_jwt_identity().split(":")[0]'
     db.session.add(new_user)
     db.session.commit()
     return jsonify(new_user.serialize()), 201

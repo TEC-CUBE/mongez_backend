@@ -36,9 +36,9 @@ CORS(
     supports_credentials=True
 )
 
-from app.views import authentication, guest, reservation, room, service, user, store, report
+from app.views import authentication, user, branch, product, category
 from app import errors
-from app.models import User, Guest, Room, Service, Payment, Reservation, ReservationService, ServiceInvoice, ServiceInvoiceDetails
+from app.models import Barcode, Branch, Category, Invoice, InvoiceDetails, Product, associations, Supplier, User, Warehouse
 
 app.register_blueprint(bp)
 

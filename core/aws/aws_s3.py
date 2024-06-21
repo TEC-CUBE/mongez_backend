@@ -51,5 +51,4 @@ def delete_object(key: str, bucket: str, aws_region: str = "eu-west-3"):
             Key=key
         )
     except ClientError as e:
-        print(e)
         return str(e.response['Error']['Message'])

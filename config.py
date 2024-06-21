@@ -1,7 +1,7 @@
 import datetime
 from core.aws.aws_ssm import fetch_ssm_config
 ## dev
-DATABASE_CONNECTION = f'mysql+pymysql://root:v9b4k4q3@localhost:3306/hotel_local'
+DATABASE_CONNECTION = f'mysql+pymysql://root:v9b4k4q3@localhost:3306/mongez_local'
 ## farag
 #DATABASE_CONNECTION = f'mysql+pymysql://root:v9b4k4q3@localhost:3306/hotel_farag'
 class Config(object):

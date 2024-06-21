@@ -38,8 +38,11 @@ def authenticate_user():
 
     if user.status != "Active":
         abort(401, "User account has been disabled")
-        
-    identity = username + ':' + role
+    if user.branch_uuid == None:
+        branch = "master"
+    else:
+        branch = user.branch.name
+    identity = username + ':' + role + ':' + branch
     
     tokens = {
         'access_token': create_access_token(identity=identity),
@@ -51,6 +54,7 @@ def authenticate_user():
             'status': 200,
             'message': "Authenticated",
             'role': role,
+            'branch': branch,
             "tokens": tokens
         }), 200
 
